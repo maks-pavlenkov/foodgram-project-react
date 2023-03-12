@@ -26,6 +26,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, through='TagRecipe')
     time_to_cook = models.IntegerField()
 
+
 class TagRecipe(models.Model):
     tag = models.ForeignKey(
         Tag,
@@ -45,3 +46,30 @@ class IngredientRecipe(models.Model):
         Recipe, on_delete=models.CASCADE
     )
     amount = models.IntegerField(null=True, blank=True)
+
+
+class ShoppingCart(models.Model):
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE
+    )
+
+class FavoriteRecipes(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE
+    )
+
+class Following(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='follower'
+    )
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, 
+        related_name='following'
+    )
