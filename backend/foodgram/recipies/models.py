@@ -13,7 +13,8 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='recipes'
         )
     name = models.CharField(max_length=100)
     image = models.ImageField(
@@ -22,8 +23,16 @@ class Recipe(models.Model):
         default=None
     )
     description = models.TextField()
-    ingredients = models.ManyToManyField(Ingredient, through='IngredientRecipe')
-    tags = models.ManyToManyField(Tag, through='TagRecipe')
+    ingredients = models.ManyToManyField(
+        Ingredient, 
+        through='IngredientRecipe',
+        related_name='recipes'
+    )
+    tags = models.ManyToManyField(
+        Tag, 
+        through='TagRecipe',
+        related_name='recipes'
+    )
     time_to_cook = models.IntegerField()
 
 

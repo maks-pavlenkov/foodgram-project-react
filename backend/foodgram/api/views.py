@@ -10,15 +10,10 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
 
-    # def get_queryset(self):
-    #     queryset = Recipe.objects.all()
-    #     req_author = self.request.query_params.get('author', None)
-    #     author = get_object_or_404(User, username=req_author)
-    #     if author is not None:
-    #         return queryset.filter(author=author)
-    #     return queryset
-
     def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+    
+    def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
 
@@ -65,8 +60,11 @@ class SubscriptionsViewSet(ReadOnlyModelViewSet):
     serializer_class = SubscriptionsSerializer
 
     def get_queryset(self):
-        user_id = self.request.user.pk
-        queryset = User.objects.filter(id=user_id)
+        authors = self.request.user.follower.all()
+        print(authors)
+        authors_pk = [author.following.pk for author in authors]
+        print(authors_pk)
+        queryset = User.objects.filter(pk__in=authors_pk)
         print(queryset, 'QUERYSEREEE')
         return queryset
 

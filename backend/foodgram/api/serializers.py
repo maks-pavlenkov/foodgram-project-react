@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from users.models import User
 from recipies.models import (Ingredient, IngredientRecipe, Recipe, Tag,
                              TagRecipe, ShoppingCart, FavoriteRecipes, Following)
@@ -78,8 +79,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         for tag in tags:
-            # current_tag, status = Tag.objects.get_or_create(
-            #     **tag)
             TagRecipe.objects.create(
                 tag=tag['id'], recipe=recipe
             )
@@ -90,13 +89,33 @@ class RecipeSerializer(serializers.ModelSerializer):
                 ingredient=current_ingredient, recipe=recipe, amount=amount
             )
         return recipe
-    
+
+    def update(self, instance, validated_data):
+        instance.ingredientrecipe_set.all().delete()
+        instance.tagrecipe_set.all().delete()
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        Recipe.objects.filter(pk=instance.pk).update(**validated_data)
+        for tag in tags:
+            TagRecipe.objects.create(tag=tag['id'], recipe=instance)
+        for ingredient in ingredients:
+            amount = ingredient['amount']
+            current_ingredient = ingredient['id']
+            IngredientRecipe.objects.create(
+                ingredient=current_ingredient, recipe=instance, amount=amount
+            )
+        return get_object_or_404(Recipe, pk=instance.pk)
+
     def get_is_in_shopping_cart(self, obj):
         print(self.context)
-        return ShoppingCart.objects.filter(author=self.context['request'].user, recipe=obj).exists()
-    
+        return ShoppingCart.objects.filter(
+            author=self.context['request'].user, recipe=obj
+        ).exists()
+
     def get_is_favorite(self, obj):
-        return FavoriteRecipes.objects.filter(author=self.context['request'].user, recipe=obj).exists()
+        return FavoriteRecipes.objects.filter(
+            author=self.context['request'].user, recipe=obj
+        ).exists()
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -120,24 +139,8 @@ class IsFavoriteSerializer(serializers.ModelSerializer):
 
 class RecipeSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('id', 'name', 'image', 'cooking_time')
-    
-    # def validate_na(self, value):
-    #     print(value, 'VALIDATE_NAME')
-    #     return value
-
-class SubscriptionsSerializer(serializers.ModelSerializer):
-    # username = serializers.SlugRelatedField(source='user', slug_field='username', read_only=True)
-    # first_name = serializers.SlugRelatedField(source='user', slug_field='first_name', read_only=True)
-    # last_name = serializers.SlugRelatedField(source='user', slug_field='last_name', read_only=True)
-    # email = serializers.SlugRelatedField(source='user', slug_field='email', read_only=True)
-    # username = serializers.SlugRelatedField(source='user', slug_field='username', read_only=True)
-    recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username',
-                  'recipes')
+        model = Recipe
+        fields = ('id', 'name', 'image', 'time_to_cook')
     
     def validate_users(self, value):
         print(value, 'VALIDATE_USERS')
@@ -151,10 +154,34 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         print(data, 'TO_INTERNAL_VALUE')
         return super().to_internal_value(data)
     
-    def to_representation(self, instance):
-        obj = super(SubscriptionsSerializer, self).to_representation(instance)
-        print(obj, 'TO_REPRESENTATION')
-        return obj
+    # def validate_na(self, value):
+    #     print(value, 'VALIDATE_NAME')
+    #     return value
+
+class SubscriptionsSerializer(serializers.ModelSerializer):
+    recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email', 'username',
+                  'recipes')
+    
+    # def validate_users(self, value):
+    #     print(value, 'VALIDATE_USERS')
+    #     return value
+    
+    # def validate(self, data):
+    #     print(data, 'VALIDATE_DATA')
+    #     return data
+    
+    # def to_internal_value(self, data):
+    #     print(data, 'TO_INTERNAL_VALUE')
+    #     return super().to_internal_value(data)
+    
+    # def to_representation(self, instance):
+    #     obj = super(SubscriptionsSerializer, self).to_representation(instance)
+    #     print(obj, 'TO_REPRESENTATION')
+    #     return obj
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
