@@ -29,6 +29,7 @@ router.register(
     SubscribeViewSet,
     basename='subscribe'
 )
+print(router.urls)
 
 urlpatterns = [
     path('v1/', include(router.urls))

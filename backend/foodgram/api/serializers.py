@@ -160,11 +160,30 @@ class RecipeSubscriptionSerializer(serializers.ModelSerializer):
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
+    is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
+
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username',
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'is_subscribed',
                   'recipes')
+
+    def get_is_subscribed(self, obj):
+        print(obj, 'OBJ')
+        print(self.context['request'].user, 'USER')
+        return Following.objects.filter(
+            user=self.context['request'].user, 
+            following=obj
+        ).exists()
+        return True
+
+
+
+        # def get_is_in_shopping_cart(self, obj):
+        # print(self.context)
+        # return ShoppingCart.objects.filter(
+        #     author=self.context['request'].user, recipe=obj
+        # ).exists()
     
     # def validate_users(self, value):
     #     print(value, 'VALIDATE_USERS')
@@ -185,8 +204,27 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    username = serializers.SlugRelatedField(source='user', slug_field='username', read_only=True)
+    username = serializers.SerializerMethodField('get_username')
+    first_name = serializers.SerializerMethodField('get_first_name')
+    last_name = serializers.SerializerMethodField('get_last_name')
+    email = serializers.SerializerMethodField('get_email')
 
     class Meta:
         model = Following
-        fields = ('id', 'username')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email')
+
+    def get_username(self, obj):
+        print(obj.following.username)
+        return obj.following.username
+
+    def get_first_name(self, obj):
+        print(obj.following.username)
+        return obj.following.first_name
+
+    def get_last_name(self, obj):
+        print(obj.following.username)
+        return obj.following.last_name
+
+    def get_email(self, obj):
+        print(obj.following.username)
+        return obj.following.email

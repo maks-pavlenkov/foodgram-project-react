@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from recipies.models import Recipe, Tag, Ingredient, ShoppingCart, FavoriteRecipes, Following
 from users.models import User
 from .serializers import RecipeSerializer, TagRecipeSerializer, IngredientSerializer, ShoppingCartSerializer, IsFavoriteSerializer, SubscriptionsSerializer, SubscribeSerializer
@@ -29,17 +30,12 @@ class IngredientViewSet(ModelViewSet):
 
 class ShoppingCartViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
     serializer_class = ShoppingCartSerializer
+    queryset = ShoppingCart.objects.all()
 
-    def get_queryset(self):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
-        queryset = ShoppingCart.objects.all()
-        return queryset
     
     def perform_create(self, serializer):
         author = self.request.user
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
-        print(self.request.user)
-        print(self.kwargs)
         serializer.save(author=author, recipe=recipe)
 
 class IsFavoriteViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
