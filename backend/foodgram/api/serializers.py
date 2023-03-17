@@ -175,7 +175,6 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
             user=self.context['request'].user, 
             following=obj
         ).exists()
-        return True
 
 
 
@@ -204,27 +203,27 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
+    recipes = RecipeSubscriptionSerializer(many=True, required=False)
+
     username = serializers.SerializerMethodField('get_username')
     first_name = serializers.SerializerMethodField('get_first_name')
     last_name = serializers.SerializerMethodField('get_last_name')
     email = serializers.SerializerMethodField('get_email')
+    recipes = RecipeSubscriptionSerializer(many=True, required=False)
+
 
     class Meta:
         model = Following
-        fields = ('id', 'username', 'first_name', 'last_name', 'email')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'recipes')
 
     def get_username(self, obj):
-        print(obj.following.username)
         return obj.following.username
 
     def get_first_name(self, obj):
-        print(obj.following.username)
         return obj.following.first_name
 
     def get_last_name(self, obj):
-        print(obj.following.username)
         return obj.following.last_name
 
     def get_email(self, obj):
-        print(obj.following.username)
         return obj.following.email
