@@ -16,6 +16,7 @@ from .serializers import (IngredientSerializer, IsFavoriteSerializer,
                           RecipeSerializer, ShoppingCartSerializer,
                           SubscribeSerializer, SubscriptionsSerializer,
                           TagRecipeSerializer)
+from .filters import RecipeFilter
 
 
 class RecipeViewSet(ModelViewSet):
@@ -23,6 +24,7 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (RecipeFavShopFollowPermission,)
     filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
