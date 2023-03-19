@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (IngredientViewSet, IsFavoriteViewSet, RecipeViewSet,
-                    ShoppingCartViewSet, Subscribe, SubscribeViewSet,
+                    ShoppingCartViewSet, Subscribe,
                     SubscriptionsViewSet, TagViewSet)
 from users.views import UserViewSet, change_password, token_login, token_logout
 
@@ -13,33 +13,13 @@ router = routers.DefaultRouter()
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('tags', TagViewSet)
 router.register('ingredients', IngredientViewSet, basename='ingredients')
-# router.register(
-#     r'recipes/(?P<id>\d+)/shopping_cart',
-#     ShoppingCartViewSet,
-#     basename='shopping_cart'
-# )
 router.register(
     'users/subscriptions',
     SubscriptionsViewSet,
     basename='subscriptions'
 )
+
 router.register('users', UserViewSet,  basename='users')
-# router.register(
-#     r'recipes/(?P<id>\d+)/favorite',
-#     IsFavoriteViewSet,
-#     basename='favorite'
-# )
-# router.register(
-#     'users/subscriptions',
-#     SubscriptionsViewSet,
-#     basename='subscriptions'
-# )
-# router.register(
-#     r'users/(?P<id>\d+)/subscribe',
-#     SubscribeViewSet,
-#     basename='subscribe'
-# )
-# print(router.urls)
 
 urlpatterns = [
     path('auth/token/login/', token_login, name='token_login'),
@@ -50,4 +30,3 @@ urlpatterns = [
     path('recipes/<int:pk>/shopping_cart/', ShoppingCartViewSet.as_view()),
     path('', include(router.urls))
 ]
-print(router.urls)

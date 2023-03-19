@@ -1,21 +1,12 @@
-import base64
-from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from recipies.models import (FavoriteRecipes, Following, Ingredient,
+                             IngredientRecipe, Recipe, ShoppingCart, Tag,
+                             TagRecipe)
 from users.models import User
-from .fields import Base64ImageField
-from django.core.files.base import ContentFile
-from recipies.models import (Ingredient, IngredientRecipe, Recipe, Tag,
-                             TagRecipe, ShoppingCart, FavoriteRecipes, Following)
 from users.serializers import UserSerializer
 
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            forma, imgstr = data.split(';base64,')
-            ext = forma.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
+from .fields import Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -56,7 +47,6 @@ class TagRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id',)
         model = TagRecipe
-    
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -66,27 +56,26 @@ class TagRecipeSerializer(serializers.ModelSerializer):
 
         return representation
 
-# class TagRecipeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         fields = ('')
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     image = Base64ImageField(required=False, allow_null=True)
     tags = TagRecipeSerializer(many=True, required=False)
     ingredients = IngredientRecipeSerializer(many=True)
-    is_in_shopping_cart = serializers.SerializerMethodField('get_is_in_shopping_cart')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        'get_is_in_shopping_cart'
+    )
     is_favorite = serializers.SerializerMethodField('get_is_favorite')
 
     class Meta:
         fields = (
-            'id', 'ingredients', 'name', 'image', 
-            'description', 'tags', 'time_to_cook', 
+            'id', 'ingredients', 'name', 'image',
+            'description', 'tags', 'time_to_cook',
             'is_in_shopping_cart', 'is_favorite', 'author'
             )
         model = Recipe
 
-    def create(self, validated_data): 
+    def create(self, validated_data):
         if 'tags' not in self.initial_data:
             recipe = Recipe.objects.create(**validated_data)
             return recipe
@@ -135,17 +124,22 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
-    name = serializers.SlugRelatedField(source='recipe', read_only=True, slug_field='name')
-    # image = serializers.SlugRelatedField(source='recipe', read_only=True, slug_field='image')
-    time_to_cook = serializers.SlugRelatedField(source='recipe', read_only=True, slug_field='time_to_cook')
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = serializers.ImageField(source='recipe.image', read_only=True)
+    time_to_cook = serializers.IntegerField(
+        source='recipe.time_to_cook', read_only=True
+    )
 
     class Meta:
         model = ShoppingCart
-        fields = ('id', 'name', 'time_to_cook')
+        fields = ('id', 'name', 'time_to_cook', 'image')
+
 
 class IsFavoriteSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
-    time_to_cook = serializers.IntegerField(source='recipe.time_to_cook', read_only=True)
+    time_to_cook = serializers.IntegerField(
+        source='recipe.time_to_cook', read_only=True
+    )
     name = serializers.CharField(source='recipe.name', read_only=True)
     image = serializers.ImageField(source='recipe.image', read_only=True)
 
@@ -153,69 +147,31 @@ class IsFavoriteSerializer(serializers.ModelSerializer):
         model = FavoriteRecipes
         fields = ('id', 'name', 'time_to_cook', 'image')
 
+
 class RecipeSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'time_to_cook')
-    
-    # def validate_users(self, value):
-    #     print(value, 'VALIDATE_USERS')
-    #     return value
-    
-    # def validate(self, data):
-    #     print(data, 'VALIDATE_DATA')
-    #     return data
-    
-    # def to_internal_value(self, data):
-    #     print(data, 'TO_INTERNAL_VALUE')
-    #     return super().to_internal_value(data)
-    
-    # def validate_na(self, value):
-    #     print(value, 'VALIDATE_NAME')
-    #     return value
+
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
 
-
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'is_subscribed',
-                  'recipes')
+        fields = (
+            'id', 'first_name', 'last_name', 'email',
+            'username', 'is_subscribed', 'recipes'
+        )
 
     def get_is_subscribed(self, obj):
         print(obj, 'OBJ')
         print(self.context['request'].user, 'USER')
         return Following.objects.filter(
-            user=self.context['request'].user, 
+            user=self.context['request'].user,
             following=obj
         ).exists()
-
-
-
-        # def get_is_in_shopping_cart(self, obj):
-        # print(self.context)
-        # return ShoppingCart.objects.filter(
-        #     author=self.context['request'].user, recipe=obj
-        # ).exists()
-    
-    # def validate_users(self, value):
-    #     print(value, 'VALIDATE_USERS')
-    #     return value
-    
-    # def validate(self, data):
-    #     print(data, 'VALIDATE_DATA')
-    #     return data
-    
-    # def to_internal_value(self, data):
-    #     print(data, 'TO_INTERNAL_VALUE')
-    #     return super().to_internal_value(data)
-    
-    # def to_representation(self, instance):
-    #     obj = super(SubscriptionsSerializer, self).to_representation(instance)
-    #     print(obj, 'TO_REPRESENTATION')
-    #     return obj
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
@@ -225,13 +181,16 @@ class SubscribeSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField('get_first_name')
     last_name = serializers.SerializerMethodField('get_last_name')
     email = serializers.SerializerMethodField('get_email')
-    recipes = RecipeSubscriptionSerializer(many=True, required=False, read_only=True)
-
+    recipes = RecipeSubscriptionSerializer(
+        many=True, required=False, read_only=True
+    )
 
     class Meta:
         model = Following
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'recipes')
-    
+        fields = (
+            'id', 'username', 'first_name', 'last_name', 'email', 'recipes'
+        )
+
     def create(self, validated_data):
         user = validated_data.get('user', False)
         following = validated_data.get('following', False)

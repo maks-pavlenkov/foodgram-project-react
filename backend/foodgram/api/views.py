@@ -1,28 +1,21 @@
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
-
-from recipies.models import (FavoriteRecipes, Following, Ingredient, Recipe,
-                             ShoppingCart, Tag, IngredientRecipe)
 from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
-
-from rest_framework import status
-from rest_framework import permissions
-from rest_framework.decorators import action, api_view
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
+from rest_framework import permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import (GenericViewSet, ModelViewSet,
-                                     ReadOnlyModelViewSet)
-from users.models import User
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from users.models import User
+from recipies.models import (FavoriteRecipes, Following, Ingredient,
+                             IngredientRecipe, Recipe, ShoppingCart, Tag)
+from .permissions import RecipeFavShopFollowPermission
 from .serializers import (IngredientSerializer, IsFavoriteSerializer,
                           RecipeSerializer, ShoppingCartSerializer,
                           SubscribeSerializer, SubscriptionsSerializer,
                           TagRecipeSerializer)
-from .permissions import RecipeFavShopFollowPermission
-
 
 
 class RecipeViewSet(ModelViewSet):
@@ -86,14 +79,6 @@ class IngredientViewSet(ModelViewSet):
 
 
 class ShoppingCartViewSet(APIView):
-    # serializer_class = ShoppingCartSerializer
-    # queryset = ShoppingCart.objects.all()
-
-    # def perform_create(self, serializer):
-    #     author = self.request.user
-    #     recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
-    #     serializer.save(author=author, recipe=recipe)
-
     permission_classes = [RecipeFavShopFollowPermission]
     filter_backends = (DjangoFilterBackend,)
 
@@ -112,7 +97,7 @@ class ShoppingCartViewSet(APIView):
             serializer.save(**request.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk):
         shop_cart = self.get_object(pk=pk).filter(recipe__pk=pk)
         shop_cart.delete()
@@ -122,7 +107,6 @@ class ShoppingCartViewSet(APIView):
 class IsFavoriteViewSet(APIView):
     permission_classes = [RecipeFavShopFollowPermission]
     filter_backends = (DjangoFilterBackend,)
-
 
     def get_object(self, pk):
         try:
@@ -137,23 +121,13 @@ class IsFavoriteViewSet(APIView):
         serializer = IsFavoriteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(**request.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk, format=None):
         favorite_recipes = self.get_object(pk).filter(recipe__id=pk)
         favorite_recipes.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # def get_queryset(self):
-    #     recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
-    #     queryset = FavoriteRecipes.objects.all()
-    #     return queryset
-
-    # def perform_create(self, serializer):
-    #     author = self.request.user
-    #     recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
-    #     serializer.save(author=author, recipe=recipe)
 
 
 class SubscriptionsViewSet(ReadOnlyModelViewSet):
@@ -163,32 +137,9 @@ class SubscriptionsViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         authors = self.request.user.follower.all()
-        print(authors)
         authors_pk = [author.following.pk for author in authors]
-        print(authors_pk)
         queryset = User.objects.filter(pk__in=authors_pk)
-        print(queryset, 'QUERYSEREEE')
         return queryset
-
-
-class SubscribeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
-    serializer_class = SubscribeSerializer
-    permission_classes = [RecipeFavShopFollowPermission]
-    filter_backends = (DjangoFilterBackend,)
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = Following.objects.filter(user=user)
-        return queryset
-
-    def perform_create(self, serializer):
-        following = User.objects.get(id=self.kwargs.get('id'))
-        serializer.save(user=self.request.user, following=following)
-    
-    def destroy(self, request, *args, **kwargs):    
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class Subscribe(APIView):
@@ -211,9 +162,9 @@ class Subscribe(APIView):
         serializer = SubscribeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(**request.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk, format=None):
         following = self.get_object(pk)
         following.delete()

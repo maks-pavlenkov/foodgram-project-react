@@ -6,7 +6,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from .models import User
 from .permissions import UsersPermission
 from .serializers import (NewPasswordSerializer, TokenSerializer,
@@ -20,10 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve', 'me'):
-            print('++++++++++++++++++++++++++++++++++++')
             return UserSerializer
-        print('++++++++++++++++++++++++++++++++++++')
-
         return UserCreateSerializer
 
     @action(["get"], detail=False)
@@ -32,7 +28,6 @@ class UserViewSet(viewsets.ModelViewSet):
         print(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 @api_view(['POST'])
