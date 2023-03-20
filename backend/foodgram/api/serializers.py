@@ -111,7 +111,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return get_object_or_404(Recipe, pk=instance.pk)
 
     def get_is_in_shopping_cart(self, obj):
-        print(self.context)
         return ShoppingCart.objects.filter(
             author=self.context['request'].user, recipe=obj
         ).exists()
@@ -166,8 +165,6 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        print(obj, 'OBJ')
-        print(self.context['request'].user, 'USER')
         return Following.objects.filter(
             user=self.context['request'].user,
             following=obj

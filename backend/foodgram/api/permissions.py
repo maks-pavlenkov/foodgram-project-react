@@ -10,10 +10,9 @@ class RecipeFavShopFollowPermission(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        if request.method == 'GET':
+        if request.method in SAFE_METHODS:
             return True
         return (
-            request.method == 'GET'
-            or obj.author == request.user
+            obj.author == request.user
             or request.user.is_admin
         )

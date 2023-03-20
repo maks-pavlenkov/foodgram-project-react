@@ -2,21 +2,20 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 
-from users.models import User
-from recipies.models import (FavoriteRecipes, Following, Ingredient,
-                             IngredientRecipe, Recipe, ShoppingCart, Tag)
+from .filters import RecipeFilter
 from .permissions import RecipeFavShopFollowPermission
 from .serializers import (IngredientSerializer, IsFavoriteSerializer,
                           RecipeSerializer, ShoppingCartSerializer,
-                          SubscribeSerializer, SubscriptionsSerializer,
                           TagRecipeSerializer)
-from .filters import RecipeFilter
+from recipies.models import (FavoriteRecipes, Following, Ingredient,
+                             IngredientRecipe, Recipe, ShoppingCart, Tag)
 
 
 class RecipeViewSet(ModelViewSet):
@@ -26,9 +25,11 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    @transaction.atomic
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -129,45 +130,4 @@ class IsFavoriteViewSet(APIView):
     def delete(self, request, pk, format=None):
         favorite_recipes = self.get_object(pk).filter(recipe__id=pk)
         favorite_recipes.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SubscriptionsViewSet(ReadOnlyModelViewSet):
-    serializer_class = SubscriptionsSerializer
-    permission_classes = [RecipeFavShopFollowPermission]
-    filter_backends = (DjangoFilterBackend,)
-
-    def get_queryset(self):
-        authors = self.request.user.follower.all()
-        authors_pk = [author.following.pk for author in authors]
-        queryset = User.objects.filter(pk__in=authors_pk)
-        return queryset
-
-
-class Subscribe(APIView):
-    permission_classes = [RecipeFavShopFollowPermission]
-    filter_backends = (DjangoFilterBackend,)
-
-    def get_object(self, pk):
-        try:
-            return Following.objects.get(following=pk)
-        except Following.DoesNotExist:
-            return Response('Object not found', status.HTTP_404_NOT_FOUND)
-
-    def post(self, request, pk):
-        try:
-            following = User.objects.get(id=pk)
-        except User.DoesNotExist:
-            return Response('Object not found', status.HTTP_404_NOT_FOUND)
-        request.data['user'] = self.request.user
-        request.data['following'] = following
-        serializer = SubscribeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(**request.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        following = self.get_object(pk)
-        following.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
