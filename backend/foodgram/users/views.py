@@ -32,7 +32,6 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(["get"], detail=False)
     def me(self, request, *args, **kwargs):
         instance = request.user
-        print(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -40,27 +39,14 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def token_login(request):
+    email = request.data['email']
     serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    email = serializer.validated_data.get('email')
-    password = serializer.validated_data.get('password')
     user = get_object_or_404(User, email=email)
-    if user:
-        if user.check_password(password):
-            token = str(RefreshToken.for_user(user).access_token)
-            return Response(
-                {"auth_token": token},
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                'Invalid password',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-    else:
+    if serializer.is_valid(raise_exception=True):
+        token = str(RefreshToken.for_user(user).access_token)
         return Response(
-            'No such email',
-            status=status.HTTP_400_BAD_REQUEST
+            {"auth_token": token},
+            status=status.HTTP_201_CREATED
         )
 
 
