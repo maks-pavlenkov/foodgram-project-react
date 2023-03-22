@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueValidator
 from .models import User
 from recipies.models import Following, Recipe
