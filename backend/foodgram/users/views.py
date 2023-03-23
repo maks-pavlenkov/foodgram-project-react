@@ -40,8 +40,13 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def token_login(request):
     email = request.data['email']
-    serializer = TokenSerializer(data=request.data)
     user = get_object_or_404(User, email=email)
+    serializer = TokenSerializer(
+        data=request.data,
+        context={
+            'user': user
+        }
+    )
     if serializer.is_valid(raise_exception=True):
         token = str(RefreshToken.for_user(user).access_token)
         return Response(
@@ -88,22 +93,18 @@ class Subscribe(APIView):
     filter_backends = (DjangoFilterBackend,)
 
     def get_object(self, pk):
-        try:
-            return Following.objects.get(following=pk)
-        except Following.DoesNotExist:
-            return Response('Object not found', status.HTTP_404_NOT_FOUND)
+        return Following.objects.get(following=pk)
 
     def post(self, request, pk):
-        try:
-            following = User.objects.get(id=pk)
-        except User.DoesNotExist:
-            return Response('Object not found', status.HTTP_404_NOT_FOUND)
+        following = get_object_or_404(User, id=pk)
         request.data['user'] = self.request.user
         request.data['following'] = following
         serializer = SubscribeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(**request.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Подскажи, почему это костыль? и как сделать правильнее?()
+        # Почти точно такой же код, с обработкой 400 ошибок, был в теории, поэтому это ставит меня в тупик)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):

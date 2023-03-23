@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import User
 from recipies.models import Following, Recipe
@@ -109,7 +109,7 @@ class TokenSerializer(serializers.Serializer):
 
     def validate(self, data):
         password = data['password']
-        user = get_object_or_404(User, email=data['email'])
+        user = self.context.get('user')
         if user.check_password(password):
             return data
         raise serializers.ValidationError('Wrong password')
