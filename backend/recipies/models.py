@@ -126,3 +126,4 @@ class Following(models.Model):
                 fields=["user", "following"], name="unique_user_following"
             )
         ]
+
