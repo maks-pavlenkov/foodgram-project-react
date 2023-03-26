@@ -1,9 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from recipies.models import (FavoriteRecipes, Following, Ingredient,
+from recipies.models import (FavoriteRecipes, Ingredient,
                              IngredientRecipe, Recipe, ShoppingCart, Tag,
                              TagRecipe)
-from users.models import User
 from users.serializers import UserSerializer
 
 from .fields import Base64ImageField
@@ -70,7 +69,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
             'id', 'ingredients', 'name', 'image',
-            'description', 'tags', 'time_to_cook',
+            'text', 'tags', 'cooking_time',
             'is_in_shopping_cart', 'is_favorite', 'author'
             )
         model = Recipe
@@ -125,92 +124,29 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
     name = serializers.CharField(source='recipe.name', read_only=True)
     image = serializers.ImageField(source='recipe.image', read_only=True)
-    time_to_cook = serializers.IntegerField(
-        source='recipe.time_to_cook', read_only=True
+    cooking_time = serializers.IntegerField(
+        source='recipe.cooking_time', read_only=True
     )
 
     class Meta:
         model = ShoppingCart
-        fields = ('id', 'name', 'time_to_cook', 'image')
+        fields = ('id', 'name', 'cooking_time', 'image')
 
 
 class IsFavoriteSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
-    time_to_cook = serializers.IntegerField(
-        source='recipe.time_to_cook', read_only=True
+    cooking_time = serializers.IntegerField(
+        source='recipe.cooking_time', read_only=True
     )
     name = serializers.CharField(source='recipe.name', read_only=True)
     image = serializers.ImageField(source='recipe.image', read_only=True)
 
     class Meta:
         model = FavoriteRecipes
-        fields = ('id', 'name', 'time_to_cook', 'image')
+        fields = ('id', 'name', 'cooking_time', 'image')
 
 
 class RecipeSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'time_to_cook')
-
-
-class SubscriptionsSerializer(serializers.ModelSerializer):
-    recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
-    is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
-
-    class Meta:
-        model = User
-        fields = (
-            'id', 'first_name', 'last_name', 'email',
-            'username', 'is_subscribed', 'recipes'
-        )
-
-    def get_is_subscribed(self, obj):
-        return Following.objects.filter(
-            user=self.context['request'].user,
-            following=obj
-        ).exists()
-
-
-class SubscribeSerializer(serializers.ModelSerializer):
-    recipes = RecipeSubscriptionSerializer(many=True, required=False)
-
-    username = serializers.SerializerMethodField('get_username')
-    first_name = serializers.SerializerMethodField('get_first_name')
-    last_name = serializers.SerializerMethodField('get_last_name')
-    email = serializers.SerializerMethodField('get_email')
-    recipes = RecipeSubscriptionSerializer(
-        many=True, required=False, read_only=True
-    )
-
-    class Meta:
-        model = Following
-        fields = (
-            'id', 'username', 'first_name', 'last_name', 'email', 'recipes'
-        )
-
-    def create(self, validated_data):
-        user = validated_data.get('user', False)
-        following = validated_data.get('following', False)
-        if not following:
-            raise serializers.ValidationError('Failed: No such user')
-        if user == following:
-            raise serializers.ValidationError(
-                'Failed: You cant follow yourself!'
-            )
-        if Following.objects.filter(user=user, following=following).exists():
-            raise serializers.ValidationError(
-                f'Failed: You already follow {following.username}'
-            )
-        return Following.objects.create(**validated_data)
-
-    def get_username(self, obj):
-        return obj.following.username
-
-    def get_first_name(self, obj):
-        return obj.following.first_name
-
-    def get_last_name(self, obj):
-        return obj.following.last_name
-
-    def get_email(self, obj):
-        return obj.following.email
+        fields = ('id', 'name', 'image', 'cooking_time')

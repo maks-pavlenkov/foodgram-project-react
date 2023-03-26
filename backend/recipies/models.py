@@ -40,7 +40,7 @@ class Recipe(models.Model):
         null=True,
         default=None
     )
-    description = models.TextField(verbose_name='Описание рецепта')
+    text = models.TextField(verbose_name='Описание рецепта')
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
@@ -51,7 +51,7 @@ class Recipe(models.Model):
         through='TagRecipe',
         related_name='recipes'
     )
-    time_to_cook = models.IntegerField(verbose_name='Время приготовления')
+    cooking_time = models.IntegerField(verbose_name='Время приготовления')
 
 
 class TagRecipe(models.Model):
