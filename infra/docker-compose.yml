@@ -5,6 +5,7 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      # image: edmpeople/frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
   db:
@@ -18,7 +19,7 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
-    # image: edmpeople/backend:v3
+    # image: edmpeople/backend:latest
     restart: always
     volumes:
       - static_value:/app/static/
