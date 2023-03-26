@@ -133,7 +133,7 @@ class NewPasswordSerializer(serializers.Serializer):
 class RecipeSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'time_to_cook')
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
@@ -148,8 +148,6 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        print(obj, 'OBJ')
-        print(self.context['request'].user, 'USER')
         return Following.objects.filter(
             user=self.context['request'].user,
             following=obj

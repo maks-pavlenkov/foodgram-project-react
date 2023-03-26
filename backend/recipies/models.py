@@ -19,7 +19,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         'Название ингредиента', max_length=100, blank=False, default=None
     )
-    units = models.CharField('Единицы измерения', max_length=50)
+    measurement_unit = models.CharField('Единицы измерения', max_length=50)
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -33,13 +33,13 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор рецепта'
         )
-    name = models.CharField('Название рецепта', max_length=100)
+    name = models.CharField('Название рецепта', max_length=200)
     image = models.ImageField(
         'Изображение рецепта',
         upload_to='recipies/images',
         null=True,
         default=None
-    )
+        )
     text = models.TextField(verbose_name='Описание рецепта')
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -67,12 +67,14 @@ class TagRecipe(models.Model):
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE
+        Ingredient, on_delete=models.CASCADE,
+        related_name='amounts'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE
+        Recipe, on_delete=models.CASCADE,
+        related_name='amounts'
     )
-    amount = models.IntegerField('Количество', null=True, blank=True)
+    amount = models.PositiveSmallIntegerField('Количество', default=1)
 
 
 class ShoppingCart(models.Model):

@@ -12,10 +12,11 @@ class User(AbstractUser):
         (USER, 'Пользователь')
     ]
     username = models.CharField(
-        verbose_name='Почтовый ящик',
+        verbose_name='Имя пользователя',
         max_length=150,
         unique=True)
     email = models.EmailField(
+        verbose_name='Почтовый ящик',
         max_length=254)
     first_name = models.CharField(
         verbose_name='Имя',

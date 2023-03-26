@@ -15,7 +15,10 @@ services:
       - ./.env
 
   backend:
-    image: edmpeople/backend:v3
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    # image: edmpeople/backend:v3
     restart: always
     volumes:
       - static_value:/app/static/

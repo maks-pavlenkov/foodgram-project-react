@@ -1,6 +1,6 @@
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from rest_framework import permissions, status
@@ -12,18 +12,26 @@ from rest_framework.viewsets import ModelViewSet
 from .filters import RecipeFilter
 from .permissions import RecipeFavShopFollowPermission
 from .serializers import (IngredientSerializer, IsFavoriteSerializer,
-                          RecipeSerializer, ShoppingCartSerializer,
-                          TagRecipeSerializer)
+                          RecipeSerializer, RecipeCreateSerializer,
+                          ShoppingCartSerializer, TagRecipeSerializer)
 from recipies.models import (FavoriteRecipes, Following, Ingredient,
                              IngredientRecipe, Recipe, ShoppingCart, Tag)
 
 
 class RecipeViewSet(ModelViewSet):
-    serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
     permission_classes = (RecipeFavShopFollowPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        """
+        Кастомизация сериализаторов в связи с требованиями ТЗ
+        по полям ввода/вывода.
+        """
+        if self.action in ('list', 'retrieve'):
+            return RecipeSerializer
+        return RecipeCreateSerializer
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -35,11 +43,11 @@ class RecipeViewSet(ModelViewSet):
 
     @action(methods=('get',), detail=False)
     def download_shopping_cart(self, request):
-        shop_cart = get_object_or_404(ShoppingCart, user=request.user)
+        shop_cart = get_list_or_404(ShoppingCart, author=request.user)
         ingredients = IngredientRecipe.objects.filter(
             recipe__in=shop_cart.recipes.all()
         ).values(
-            'ingredient__name', 'ingredient__units'
+            'ingredient__name', 'ingredient__measurement_unit'
         ).order_by(
             'ingredient__name'
         ).annotate(
@@ -49,7 +57,7 @@ class RecipeViewSet(ModelViewSet):
         for ingr in ingredients:
             draw.append(
                 f'{ingr["ingredient__name"]} '
-                f'({ingr["ingredient__units"]})'
+                f'({ingr["ingredient__measurement_unit"]})'
                 f' - {ingr["ingredient_total"]} \n'
             )
         resp = HttpResponse(draw, content_type='text/plain; charset=UTF-8')
