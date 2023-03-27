@@ -47,6 +47,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          context: backend/
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
           file: backend/Dockerfile
   build_frontend_and_push_to_docker_hub:
@@ -75,6 +76,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          context: frontend/
           tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
           file: frontend/Dockerfile
   deploy:
