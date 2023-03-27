@@ -97,10 +97,11 @@ jobs:
           script: |
             sudo docker-compose stop
             sudo docker-compose rm -f
+            sudo docker ps -a -f status=exited
             sudo docker image prune -af
             sudo docker pull edmpeople/backend
             sudo docker pull edmpeople/frontend
             sudo docker-compose up -d
-            sudo docker-compose exec -T backend python backend/manage.py makemigrations
-            sudo docker-compose exec -T backend python backend/manage.py migrate
-            sudo docker-compose exec -T backend python backend/manage.py collectstatic --no-input
+            sudo docker-compose exec -T backend python manage.py makemigrations
+            sudo docker-compose exec -T backend python manage.py migrate
+            sudo docker-compose exec -T backend python manage.py collectstatic --no-input
