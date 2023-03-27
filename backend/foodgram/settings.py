@@ -7,7 +7,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default='some secret key')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*', '109.252.120.89']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '158.160.29.232']
 
 INSTALLED_APPS = [
     'recipies.apps.RecipiesConfig',
