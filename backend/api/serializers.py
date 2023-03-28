@@ -153,7 +153,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        instance.ingredientrecipe_set.all().delete()
+        print(dir(instance))
+        instance.amounts.all().delete()
         instance.tagrecipe_set.all().delete()
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
@@ -209,8 +210,3 @@ class IsFavoriteSerializer(serializers.ModelSerializer):
         model = FavoriteRecipes
         fields = ('id', 'name', 'cooking_time', 'image')
 
-
-class RecipeSubscriptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
