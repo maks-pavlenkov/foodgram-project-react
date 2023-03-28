@@ -44,8 +44,9 @@ class RecipeViewSet(ModelViewSet):
     @action(methods=('get',), detail=False)
     def download_shopping_cart(self, request):
         shop_cart = get_list_or_404(ShoppingCart, author=request.user)
+        recipes = [shop_cart_ingr.recipe for shop_cart_ingr in shop_cart]
         ingredients = IngredientRecipe.objects.filter(
-            recipe__in=shop_cart.recipes.all()
+            recipe__in=recipes
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
         ).order_by(
