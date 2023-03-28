@@ -88,9 +88,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 return False
             user = self.context['request'].user
             return user.favorites.filter(recipe_id=obj.pk).exists()
-        except Exception as e:
-            print(str(e))
-            print('FALSE, ======================')
+        except Exception:
             return False
 
     def get_is_in_shopping_cart(self, obj):
