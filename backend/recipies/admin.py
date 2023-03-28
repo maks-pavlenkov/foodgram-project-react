@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import IngredientRecipe, Ingredient, Recipe, Tag
+from .models import IngredientRecipe, Ingredient, Recipe, Tag, TagRecipe
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -19,11 +19,16 @@ class IngredientRecipeInline(admin.TabularInline):
     verbose_name_plural = 'Ингредиенты'
 
 
+class TagRecipeInline(admin.TabularInline):
+    model = TagRecipe
+    verbose_name_plural = 'Теги'
+
+
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
     search_fields = ('name', 'author', 'tags')
     list_filter = ('name', 'author', 'tags')
-    inlines = (IngredientRecipeInline,)
+    inlines = (IngredientRecipeInline, TagRecipeInline)
 
 
 admin.site.register(Tag, TagAdmin)
