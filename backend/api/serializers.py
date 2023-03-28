@@ -79,7 +79,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only=True,
         source='amounts'
     )
-    is_favorite = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField('get_is_favorite')
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     def get_is_favorite(self, obj):
@@ -87,7 +87,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             if self.context['request'].user.is_anonymous:
                 return False
             user = self.context['request'].user
-            return user.favorites.recipes.filter(pk=obj.pk).exists()
+            return user.favorites.filter(pk=obj.pk).exists()
         except Exception:
             return False
 
@@ -96,7 +96,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             if self.context['request'].user.is_anonymous:
                 return False
             user = self.context['request'].user
-            return user.shoppingcart.recipes.filter(pk=obj.pk).exists()
+            return user.shoppingcart.filter(pk=obj.pk).exists()
         except Exception:
             return False
 
