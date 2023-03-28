@@ -128,7 +128,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
 
     def to_internal_value(self, data):
-        return data
+        """Удаляем теги из даты, чтобы корректно серилиазовалось поле картинки, а затем добавляем теги обратно."""
+        tags = data.pop('tags')
+        internal_data = super().to_internal_value(data)
+        internal_data['tags'] = tags
+        return internal_data
 
     def to_representation(self, instance):
         serializer = RecipeSerializer(instance)
@@ -153,7 +157,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        print(dir(instance))
         instance.amounts.all().delete()
         instance.tagrecipe_set.all().delete()
         ingredients = validated_data.pop('ingredients')
@@ -170,9 +173,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient=ingr_obj, recipe=instance, amount=amount
             )
         return get_object_or_404(Recipe, pk=instance.pk)
-
-    def to_internal_value(self, data):
-        return data
 
     def get_is_in_shopping_cart(self, obj):
         return ShoppingCart.objects.filter(
