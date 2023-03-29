@@ -103,8 +103,6 @@ class Subscribe(APIView):
         if serializer.is_valid():
             serializer.save(**request.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # Подскажи, почему это костыль? и как сделать правильнее?()
-        # Почти точно такой же код, с обработкой 400 ошибок, был в теории, поэтому это ставит меня в тупик)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):

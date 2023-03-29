@@ -25,6 +25,9 @@ class Ingredient(models.Model):
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
+    def __str__(self):
+        return self.name
+
 
 class Recipe(models.Model):
     author = models.ForeignKey(
@@ -50,7 +53,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         through='TagRecipe',
-        related_name='recipes', 
+        related_name='recipes',
         verbose_name='Теги рецепта'
     )
     cooking_time = models.IntegerField(verbose_name='Время приготовления')
@@ -135,4 +138,3 @@ class Following(models.Model):
                 fields=["user", "following"], name="unique_user_following"
             )
         ]
-

@@ -83,13 +83,12 @@ AUTH_PASSWORD_VALIDATORS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
 
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'users.User'
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "ru" 
 
 TIME_ZONE = 'UTC'
 
