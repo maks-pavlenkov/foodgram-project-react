@@ -3,7 +3,7 @@ from csv import reader
 from errno import EACCES, ENOENT
 
 
-def data_validation(path, required_fields):
+def data_validation(path):
 
     try:
         with open(path, 'r') as csv_file:
@@ -20,8 +20,4 @@ def data_validation(path, required_fields):
         else:
             print('Could not open file')
             sys.exit()
-    columns_names = list(data[0])
-    for field in required_fields:
-        if field not in columns_names:
-            raise ValueError(f'Missing required column: {field}')
     return data
