@@ -1,11 +1,17 @@
 from django.db import models
 from users.models import User
+from .validators import regex_tag_color
 
 
 class Tag(models.Model):
     name = models.CharField('Название тега', max_length=50, unique=True)
     slug = models.SlugField(unique=True, blank=True, default=None)
-    hexcolor = models.CharField('Цвет', max_length=7, unique=True)
+    hexcolor = models.CharField(
+        'Цвет',
+        max_length=7,
+        validators=[regex_tag_color, ],
+        unique=True
+    )
 
     class Meta:
         verbose_name = 'Тег'
