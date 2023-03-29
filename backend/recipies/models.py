@@ -58,15 +58,21 @@ class Recipe(models.Model):
     )
     cooking_time = models.IntegerField(verbose_name='Время приготовления')
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
 
 class TagRecipe(models.Model):
     tag = models.ForeignKey(
         Tag,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Тег'
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт тега'
     )
 
 
