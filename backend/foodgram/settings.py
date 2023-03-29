@@ -10,9 +10,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '158.160.29.232']
 
 INSTALLED_APPS = [
-    'recipies.apps.RecipiesConfig',
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,7 +18,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'recipies.apps.RecipiesConfig',
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig'
 ]
 
 MIDDLEWARE = [
