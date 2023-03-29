@@ -9,7 +9,6 @@ class Tag(models.Model):
     color = models.CharField(
         'Цвет',
         max_length=7,
-        default='#000000',
         validators=[regex_tag_color, ],
         unique=True
     )
