@@ -34,7 +34,7 @@ class TagSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['name'] = instance.name
-        representation['hexcolor'] = instance.hexcolor
+        representation['color'] = instance.color
         representation['slug'] = instance.slug
 
         return representation
@@ -52,7 +52,7 @@ class TagRecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['name'] = instance.name
-        representation['hexcolor'] = instance.hexcolor
+        representation['color'] = instance.color
         representation['slug'] = instance.slug
 
         return representation
