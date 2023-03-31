@@ -20,14 +20,14 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
         required=True
     )
 
+    class Meta:
+        model = IngredientRecipe
+        fields = ('id', 'amount')
+
     def validate_amount(self, attrs):
         if attrs > SMALL_INT_NUMBER:
             raise serializers.ValidationError('Число должно быть меньше 32767')
         return super().validate(attrs)
-
-    class Meta:
-        model = IngredientRecipe
-        fields = ('id', 'amount')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -123,7 +123,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         'get_is_in_shopping_cart'
     )
     is_favorite = serializers.SerializerMethodField('get_is_favorite')
-    
+
     class Meta:
         fields = (
             'id', 'ingredients', 'name', 'image',
@@ -214,4 +214,3 @@ class IsFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = FavoriteRecipes
         fields = ('id', 'name', 'cooking_time', 'image')
-
