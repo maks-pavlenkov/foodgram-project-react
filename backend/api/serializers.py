@@ -4,7 +4,7 @@ from recipies.models import (FavoriteRecipes, Ingredient,
                              IngredientRecipe, Recipe, ShoppingCart, Tag,
                              TagRecipe)
 from users.serializers import UserSerializer
-
+from foodgram.settings import SMALL_INT_NUMBER
 from .fields import Base64ImageField
 
 
@@ -19,6 +19,11 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(
         required=True
     )
+
+    def validate_amount(self, attrs):
+        if attrs > SMALL_INT_NUMBER:
+            raise serializers.ValidationError('Число должно быть меньше 32767')
+        return super().validate(attrs)
 
     class Meta:
         model = IngredientRecipe
@@ -118,7 +123,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         'get_is_in_shopping_cart'
     )
     is_favorite = serializers.SerializerMethodField('get_is_favorite')
-
+    
     class Meta:
         fields = (
             'id', 'ingredients', 'name', 'image',

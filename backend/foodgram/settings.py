@@ -115,3 +115,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
     'AUTH_HEADER_TYPES': ('Token',),
 }
+
+SMALL_INT_NUMBER = 32767
